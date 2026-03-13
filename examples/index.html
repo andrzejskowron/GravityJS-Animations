@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GravityJS - Physics Animation Library</title>
+  <style>
+    /* Embedded navigation styles to avoid CORS issues */
+    .nav {
+      display: flex;
+      gap: 20px;
+      padding: 15px 30px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: #495057;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background: #e9ecef;
+      color: #ff6361;
+    }
+
+    .nav-link.active {
+      background: #ff6361;
+      color: white;
+    }
+
+    /* Embedded footer styles to avoid CORS issues */
+    .footer {
+      background: #00202e;
+      color: white;
+      padding: 30px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .footer p {
+      opacity: 0.8;
+      font-size: 14px;
+    }
+  </style>
+  <link rel="stylesheet" href="../src/gravity.css">
+  <link rel="stylesheet" href="../includes/common-styles.css">
+  <style>
+    .logo {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      vertical-align: middle;
+      display: inline-block;
+    }
+    /* Deformation demo specific styles */
+    .deformation-demo {
+      padding: 40px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+
+    .deformation-zone {
+      display: inline-block;
+      width: 180px;
+      height: 60px;
+      background: #003f5c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      white-space: normal;
+      will-change: transform, clip-path;
+    }
+
+    .deformation-zone.center { background: #003f5c; }
+    .deformation-zone.edge-x { background: #ff6361; }
+    .deformation-zone.edge-y { background: #ffa600; }
+    .deformation-zone.corner { background: #8a508f; }
+
+    .zone-indicator {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      font-size: 14px;
+      color: white;
+    }
+
+    .deformation-demo-grid {
+      background-color: #2c4875;
+      border-radius: 3.5px;
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding: 50px;
+    }
+
+    .deformation-demo-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+      max-width: 240px;
+    }
+
+    .deformation-subsection {
+      color: white;
+      margin-top: 34px;
+    }
+
+    .deformation-note {
+      color: rgba(255,255,255,0.9);
+      max-width: 860px;
+    }
+
+    .deformation-zone.wide {
+      width: 220px;
+      height: 72px;
+    }
+
+    .deformation-controls {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+
+    .control-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-right: 20px;
+    }
+
+    .control-group label {
+      color: white;
+      font-size: 14px;
+    }
+
+    .control-group input[type="range"] {
+      width: 150px;
+    }
+
+    .physics-box.moving::after {
+      content: '⚡';
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    /* Toast notification styles */
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: linear-gradient(135deg, #8a508f 0%, #bc5090 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(188, 80, 144, 0.4), 0 0 0 1px rgba(255,255,255,0.1);
+      margin-bottom: 12px;
+      min-width: 300px;
+      max-width: 400px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toastSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.toast-disappearing {
+      animation: toastFadeOut 0.5s ease-in forwards;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        transform: translateX(120%) scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes toastFadeOut {
+      from {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(120%) scale(0.95);
+        opacity: 0;
+      }
+    }
+
+    .toast-icon {
+      font-size: 20px;
+      animation: toastPulse 0.6s ease-out;
+    }
+
+    @keyframes toastPulse {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .toast-content {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .toast-message {
+      opacity: 0.95;
+      word-wrap: break-word;
+    }
+
+    /* Card deformation demo styles */
+    .card-demo-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 40px;
+    }
+
+    .deformable-card {
+      width: 280px;
+      height: 160px;
+      background: linear-gradient(135deg, #ff6361 0%, #ff8531 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      will-change: transform, box-shadow, clip-path;
+    }
+
+    .card-label {
+      position: absolute;
+      bottom: -25px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Input deformation demo */
+    .input-demo-container {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+
+    .deformable-input {
+      width: 300px;
+      padding: 15px 20px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      will-change: transform, clip-path;
+    }
+
+    .deformable-input:focus {
+      border-color: #ff6361;
+      box-shadow: 0 0 0 3px rgba(255, 99, 97, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar (embedded to avoid CORS issues) -->
+  <nav class="nav">
+    <a href="index.html" class="nav-link active" data-gravity-navigation>Animations</a>
+    <a href="components.html" class="nav-link" data-gravity-navigation>Components</a>
+    <a href="demo-scroll-animation.html" class="nav-link" data-gravity-navigation>Scroll FX</a>
+  </nav>
+
+  <!-- Floating Controls Panel -->
+  <aside class="controls-fixed">
+    <div class="controls-title">Controls</div>
+    <button class="btn btn-primary" id="startBtn">Start</button>
+    <button class="btn btn-primary" id="dropBtn">Drop All</button>
+    <button class="btn btn-primary" id="resetBtn">Reset</button>
+    <button class="btn btn-secondary" id="toggleBtn">
+      <span id="toggleText">Pause</span>
+    </button>
+  </aside>
+
+  <div class="container">
+	    <!-- Hidden debug element for state tracking -->
+	    <div id="debugState" style="display:none;"></div>
+
+		    <h1><img class="logo" src="../assets/logo.webp" style="height:64px;width:64px;margin-right:12px;margin-bottom:5px;filter:drop-shadow(0px -4px 12px rgba(250,250,0,0.5));"/>GravityJS</h1>
+    <p class="subtitle">Physics-based animations that feel like real objects in Earth's gravity</p>
+
+    <!-- Basic Gravity Examples (existing) -->
+    <div class="demo-section">
+      <span class="demo-label">Basic Gravity (default mass=1, elasticity=0.6)</span>
+      <div class="demo-grid">
+        <div class="physics-area" id="area1">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-red"
+            data-gravity
+            data-gravity-mass="1"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Mass: 1</div>
+        </div>
+        <div class="physics-area" id="area2">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-blue"
+            data-gravity
+            data-gravity-mass="1"
+            data-gravity-x="20"
+            data-gravity-y="50"
+          >Mass: 1</div>
+        </div>
+        <div class="physics-area" id="area3">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-green"
+            data-gravity
+            data-gravity-mass="1"
+            data-gravity-x="20"
+            data-gravity-y="80"
+          >Mass: 1</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <span class="demo-label">Different Mass Values</span>
+      <div class="demo-grid">
+        <div class="physics-area" id="area4">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-red"
+            data-gravity
+            data-gravity-mass="0.5"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Light<br>0.5kg</div>
+        </div>
+        <div class="physics-area" id="area5">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-blue"
+            data-gravity
+            data-gravity-mass="1"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Normal<br>1kg</div>
+        </div>
+        <div class="physics-area" id="area6">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-purple"
+            data-gravity
+            data-gravity-mass="3"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Heavy<br>3kg</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <span class="demo-label">Different Elasticity (Bounciness)</span>
+      <div class="demo-grid">
+        <div class="physics-area" id="area7">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-red"
+            data-gravity
+            data-gravity-elasticity="0.1"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Dull<br>e=0.1</div>
+        </div>
+        <div class="physics-area" id="area8">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-blue"
+            data-gravity
+            data-gravity-elasticity="0.6"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Normal<br>e=0.6</div>
+        </div>
+        <div class="physics-area" id="area9">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-yellow"
+            data-gravity
+            data-gravity-elasticity="0.95"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Bouncy<br>e=0.95</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <span class="demo-label">Friction Effects</span>
+      <div class="demo-grid">
+        <div class="physics-area" id="area10">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-green"
+            data-gravity
+            data-gravity-elasticity="0.8"
+            data-gravity-friction="0.1"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Low Friction<br>μ=0.1</div>
+        </div>
+        <div class="physics-area" id="area11">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-purple"
+            data-gravity
+            data-gravity-elasticity="0.8"
+            data-gravity-friction="0.5"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >High Friction<br>μ=0.5</div>
+        </div>
+        <div class="physics-area" id="area12">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-blue"
+            data-gravity
+            data-gravity-elasticity="0.8"
+            data-gravity-friction="0.9"
+            data-gravity-x="20"
+            data-gravity-y="20"
+          >Sticky<br>μ=0.9</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <span class="demo-label">Air Drag (Resistance)</span>
+      <div class="demo-grid">
+        <div class="physics-area" id="area13">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-red"
+            data-gravity
+            data-gravity-air-drag="0.001"
+          >No Drag<br>c=0.001</div>
+        </div>
+        <div class="physics-area" id="area14">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-blue"
+            data-gravity
+            data-gravity-air-drag="0.05"
+          >Thick Air<br>c=0.05</div>
+        </div>
+        <div class="physics-area" id="area15">
+          <div class="gravity-ground"></div>
+          <div
+            class="physics-box physics-box-green"
+            data-gravity
+            data-gravity-air-drag="0.2"
+          >Water<br>c=0.2</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deformation Examples Section -->
+    <section class="demo-section deformation-demo">
+      <span class="demo-label" style="color: white; font-size: 20px;">🔧 Material Deformation Examples</span>
+
+      <h2 style="color: white; margin-top: 30px;">Pointer-localized deformation, real contour curvature, and trigger control</h2>
+      <p class="deformation-note">
+        These examples now live after the Air Drag section and show the richer deformation system:<br>
+        • <strong>collapse</strong> pulls material toward the interaction point<br>
+        • <strong>spread</strong> pushes material outward from the interaction point<br>
+        • <strong>curvature</strong> increases how strongly the actual box contour bends around the contact zone<br>
+        • <strong>trigger</strong> switches between click/press and live hover on supported components
+      </p>
+
+      <h3 class="deformation-subsection">Collapse with fixed hotspot attribute</h3>
+      <p class="deformation-note">
+        These demo buttons use <code>data-gravity-deformation-zone</code> to pin the deformation hotspot.
+        Remove that attribute and the framework falls back to using the actual click position.
+      </p>
+
+      <div class="deformation-demo-grid">
+        <div class="deformation-demo-card">
+          <button class="deformation-zone center"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-strength="1.2"
+                  data-gravity-deformation-zone="center"
+                  data-zone-indicator="centerZone">
+            Fixed Center<br>(Collapse)
+          </button>
+          <div class="zone-indicator" id="centerZone">Target: —</div>
+        </div>
+
+        <div class="deformation-demo-card">
+          <button class="deformation-zone edge-x"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-strength="1.2"
+                  data-gravity-deformation-zone="left"
+                  data-zone-indicator="edgeXZone">
+            Fixed Left Edge<br>(Edge-X)
+          </button>
+          <div class="zone-indicator" id="edgeXZone">Target: —</div>
+        </div>
+
+        <div class="deformation-demo-card">
+          <button class="deformation-zone edge-y"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-strength="1.2"
+                  data-gravity-deformation-zone="top"
+                  data-zone-indicator="edgeYZone">
+            Fixed Top Edge<br>(Edge-Y)
+          </button>
+          <div class="zone-indicator" id="edgeYZone">Target: —</div>
+        </div>
+
+        <div class="deformation-demo-card">
+          <button class="deformation-zone corner"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-strength="1.5"
+                  data-gravity-deformation-zone="top-left"
+                  data-zone-indicator="cornerZone">
+            Fixed Top-Left<br>(Corner)
+          </button>
+          <div class="zone-indicator" id="cornerZone">Target: —</div>
+        </div>
+      </div>
+
+      <h3 class="deformation-subsection">Alternate deformation behaviors</h3>
+      <div class="deformation-demo-grid">
+        <div class="deformation-demo-card">
+          <button class="deformation-zone wide"
+                  style="background: #003f5c;"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-mode="spread"
+                  data-gravity-deformation-strength="1.1"
+                  data-gravity-deformation-curvature="1.15">
+            Spread from Click Point
+          </button>
+          <div class="zone-indicator">Mode: spread · Trigger: click</div>
+        </div>
+
+        <div class="deformation-demo-card">
+          <button class="deformation-zone wide"
+                  style="background: #8a508f;"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-depth="0.08"
+                  data-gravity-deformation-curvature="1.8">
+            Curvature-heavy Collapse
+          </button>
+          <div class="zone-indicator">Mode: collapse · Curvature boosted</div>
+        </div>
+
+        <div class="deformation-demo-card">
+          <button class="deformation-zone wide"
+                  style="background: #ff8531;"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-trigger="hover"
+                  data-gravity-deformation-mode="spread"
+                  data-gravity-deformation-strength="1.05"
+                  data-gravity-deformation-curvature="1.25">
+            Hover to Deform
+          </button>
+          <div class="zone-indicator">Mode: spread · Trigger: hover</div>
+        </div>
+      </div>
+
+      <h3 class="deformation-subsection">Live playground</h3>
+      <p class="deformation-note">
+        Tune the settings below and apply them to the playground button to compare collapse vs spread and click vs hover. Click to see the deformation!
+      </p>
+
+      <div class="deformation-demo-grid">
+        <div class="deformation-demo-card">
+          <button id="customDeformationButton"
+                  class="deformation-zone wide customizable-deformation"
+                  style="background: #ff8531;"
+                  data-gravity-button
+                  data-gravity-deformation
+                  data-gravity-deformation-strength="1.2"
+                  data-gravity-deformation-depth="0.06"
+                  data-gravity-deformation-curvature="1.0"
+                  data-gravity-deformation-mode="collapse"
+                  data-gravity-deformation-trigger="click">
+            Interactive Playground
+          </button>
+          <div class="zone-indicator">Custom target for the controls below</div>
+        </div>
+      </div>
+
+      <div class="deformation-controls">
+        <h3 style="color: white; margin-bottom: 15px;">Custom deformation settings</h3>
+
+        <div class="control-group">
+          <label for="customStrength">Strength:</label>
+          <input type="range" id="customStrength" min="0.5" max="2" step="0.1" value="1.2">
+          <span id="strengthValue">1.2</span>
+        </div>
+
+        <div class="control-group">
+          <label for="customDepth">Depth:</label>
+          <input type="range" id="customDepth" min="0.03" max="0.15" step="0.01" value="0.06">
+          <span id="depthValue">0.06</span>
+        </div>
+
+        <div class="control-group">
+          <label for="customCurvature">Curvature:</label>
+          <input type="range" id="customCurvature" min="0" max="2" step="0.1" value="1.0">
+          <span id="curvatureValue">1.0</span>
+        </div>
+
+        <div class="control-group">
+          <label for="customMode">Mode:</label>
+          <select id="customMode">
+            <option value="collapse" selected>collapse</option>
+            <option value="spread">spread</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="customTrigger">Trigger:</label>
+          <select id="customTrigger">
+            <option value="click" selected>click</option>
+            <option value="hover">hover</option>
+          </select>
+        </div>
+
+        <button class="btn btn-secondary" style="color: white; border-color: white;" onclick="applyCustomSettings()">Apply to Playground</button>
+      </div>
+    </section>
+
+    <!-- Card Deformation Examples -->
+    <section class="demo-section">
+      <span class="demo-label">Card Component with Deformation</span>
+
+      <h2 style="color: white;margin-top: 20px;">Cards: click and hover triggers</h2>
+      <p style="color: white;" >Cards can now use click-trigger collapse or hover-trigger spread while keeping their lift and shadow behavior.</p>
+
+      <div class="card-demo-container">
+        <div style="position: relative;">
+          <div class="deformable-card"
+               data-gravity-card
+               data-gravity-deformation
+               data-gravity-scale="1.05"
+               data-gravity-shadow="25">
+            Click Collapse Card
+          </div>
+          <span class="card-label">Click-trigger collapse</span>
+        </div>
+
+        <div style="position: relative;">
+          <div class="deformable-card"
+               data-gravity-card
+               data-gravity-deformation
+               data-gravity-deformation-mode="spread"
+               data-gravity-deformation-trigger="hover"
+               data-gravity-deformation-curvature="1.25"
+               data-gravity-scale="1.05"
+               data-gravity-shadow="28">
+            Hover Spread Card
+          </div>
+          <span class="card-label">Hover-trigger spread</span>
+        </div>
+
+        <div style="position: relative;">
+          <div class="deformable-card"
+               data-gravity-card
+               data-gravity-scale="1.05"
+               data-gravity-shadow="25">
+            Standard Card<br>(No Deformation)
+          </div>
+          <span class="card-label">Standard hover effect only</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Input Deformation Examples -->
+    <section class="demo-section">
+      <span class="demo-label">Input Component with Deformation</span>
+
+      <h2 style="margin-top: 20px;color: white;">Focus-based deformation for inputs</h2>
+      <p>Inputs keep their focus-based trigger, but they now inherit collapse/spread and contour deformation from the shared deformation engine.</p>
+
+      <div class="input-demo-container" style="justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: center;">
+          <label style="display: block; margin-bottom: 10px; color: #333;">Collapse Input</label>
+          <input type="text"
+                 class="deformable-input"
+                 data-gravity-input
+                 data-gravity-deformation
+                 placeholder="Click to focus...">
+          <div style="margin-top: 8px; color: #666; font-size: 12px;">Click position controls the collapse</div>
+        </div>
+
+        <div style="text-align: center;">
+          <label style="display: block; margin-bottom: 10px; color: #333;">Spread + Curvature Input</label>
+          <input type="text"
+                 class="deformable-input"
+                 data-gravity-input
+                 data-gravity-deformation
+                 data-gravity-deformation-mode="spread"
+                 data-gravity-deformation-curvature="1.4"
+                 placeholder="Click near an edge...">
+          <div style="margin-top: 8px; color: #666; font-size: 12px;">Focus still triggers it, but the shape now spreads outward</div>
+        </div>
+
+        <div style="text-align: center;">
+          <label style="display: block; margin-bottom: 10px; color: #333;">Standard Input</label>
+          <input type="text"
+                 class="deformable-input"
+                 data-gravity-input
+                 placeholder="Click to focus...">
+          <div style="margin-top: 8px; color: #666; font-size: 12px;">Standard scale effect</div>
+        </div>
+
+        <div style="text-align: center;">
+          <label style="display: block; margin-bottom: 10px; color: #333;">Deformable Textarea</label>
+          <textarea class="deformable-input"
+                    data-gravity-input
+                    data-gravity-deformation
+                    data-gravity-deformation-curvature="1.2"
+                    rows="3"
+                    placeholder="Click to focus and type...">Click here to see deformation!</textarea>
+          <div style="margin-top: 8px; color: #666; font-size: 12px;">Works with textareas too</div>
+        </div>
+      </div>
+    </section>
+
+    <h2 class="section-title">How to Use</h2>
+
+    <div class="info-panel">
+      <p>Add the <code>data-gravity</code> attribute to any element to enable gravity physics. Use data attributes to customize physics properties:</p>
+
+      <div class="attributes-list">
+        <div class="attr-item">data-gravity-mass="1" - Weight (heavier = slower fall)</div>
+        <div class="attr-item">data-gravity-elasticity="0.6" - Bounciness (0-1)</div>
+        <div class="attr-item">data-gravity-friction="0.3" - Surface friction (0-1)</div>
+        <div class="attr-item">data-gravity-air-drag="0.01" - Air resistance</div>
+        <div class="attr-item">data-gravity-fixed - Element won't move</div>
+        <div class="attr-item">data-gravity-spring - Enable spring physics</div>
+        <div class="attr-item">data-gravity-spring-stiffness="150" - Spring stiffness</div>
+        <div class="attr-item">data-gravity-spring-damping="10" - Spring damping</div>
+      </div>
+
+      <h3 style="margin-top: 20px;">Material Deformation (Optional)</h3>
+      <p>
+        Material deformation only activates on supported GravityJS component elements. Add
+        <code>data-gravity-deformation</code> together with one of these component attributes:
+      </p>
+
+      <div class="attributes-list">
+        <div class="attr-item"><code>data-gravity-button</code> - Button-like elements such as <code>&lt;button&gt;</code>, <code>&lt;a&gt;</code>, <code>&lt;div&gt;</code>, or <code>&lt;span&gt;</code></div>
+        <div class="attr-item"><code>data-gravity-card</code> - Card-like containers such as <code>&lt;div&gt;</code>, <code>&lt;article&gt;</code>, or <code>&lt;section&gt;</code></div>
+        <div class="attr-item"><code>data-gravity-input</code> - Form controls and focusable wrappers such as <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, <code>&lt;select&gt;</code>, or <code>&lt;div tabindex="0"&gt;</code></div>
+      </div>
+
+      <p style="margin-top: 15px;">Configuration attributes:</p>
+
+      <div class="attributes-list">
+        <div class="attr-item">data-gravity-deformation - Enable pointer-localized, plate-based contour deformation</div>
+        <div class="attr-item">data-gravity-deformation-strength="1.2" - Deformation intensity (default: 1.0)</div>
+        <div class="attr-item">data-gravity-deformation-depth="0.06" - Base transform compression depth (default: 0.06)</div>
+        <div class="attr-item">data-gravity-deformation-mode="collapse|spread" - Pull inward or spread outward from the interaction point</div>
+        <div class="attr-item">data-gravity-deformation-trigger="click|hover" - Trigger by press/click or live hover on buttons and cards</div>
+        <div class="attr-item">data-gravity-deformation-curvature="1.2" - Increase the strength of the plate-driven contour bending response near the contact region</div>
+        <div class="attr-item">data-gravity-deformation-zone="center|left|right|top|bottom|corner|top-left|top-right|bottom-left|bottom-right" - Optional fixed hotspot override; omit it to follow the real pointer position</div>
+        <div class="attr-item">data-gravity-material="rigid|metal|rubber|jelly" - Optional material preset affecting spring feel and plate response</div>
+      </div>
+
+      <p style="margin-top: 15px;">
+        If <code>data-gravity-deformation-zone</code> is omitted, deformation continues to behave exactly as before and depends on where the user clicks, touches, or hovers.
+      </p>
+
+      <p style="margin-top: 15px;"><strong>Implementation examples:</strong></p>
+      <ul style="line-height: 1.8;">
+        <li><code>&lt;button data-gravity-button data-gravity-deformation&gt;...&lt;/button&gt;</code></li>
+        <li><code>&lt;button data-gravity-button data-gravity-deformation data-gravity-deformation-zone="left"&gt;...&lt;/button&gt;</code></li>
+        <li><code>&lt;div data-gravity-card data-gravity-deformation&gt;...&lt;/div&gt;</code></li>
+        <li><code>&lt;input data-gravity-input data-gravity-deformation /&gt;</code></li>
+        <li><code>&lt;textarea data-gravity-input data-gravity-deformation&gt;&lt;/textarea&gt;</code></li>
+        <li><code>&lt;select data-gravity-input data-gravity-deformation&gt;...&lt;/select&gt;</code></li>
+        <li><code>&lt;div tabindex="0" data-gravity-input data-gravity-deformation&gt;...&lt;/div&gt;</code></li>
+      </ul>
+
+      <p style="margin-top: 15px;"><strong>Deformation zones:</strong></p>
+      <ul style="line-height: 1.8;">
+        <li><strong>Center click</strong>: Uniform compression (scaleX = scaleY, no translation)</li>
+        <li><strong>Edge-X click</strong>: Horizontal directional compression with preserved vertical scale</li>
+        <li><strong>Edge-Y click</strong>: Vertical directional compression with preserved horizontal scale</li>
+        <li><strong>Corner click</strong>: Diagonal deformation + translation toward corner</li>
+      </ul>
+
+      <p style="margin-top: 15px;"><strong>Modes and triggers:</strong></p>
+      <ul style="line-height: 1.8;">
+        <li><strong>Collapse mode</strong>: material compresses toward the pointer.</li>
+        <li><strong>Spread mode</strong>: material expands away from the pointer.</li>
+        <li><strong>Hover trigger</strong>: supported on <code>data-gravity-button</code> and <code>data-gravity-card</code> for live pointer-driven deformation.</li>
+        <li><strong>Inputs</strong>: <code>data-gravity-input</code> elements use focus/click capture rather than live hover, while still using the same deformation engine.</li>
+      </ul>
+    </div>
+
+    <h2 class="section-title">JavaScript API</h2>
+
+    <div class="info-panel">
+      <pre style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; overflow-x: auto;"><code>// Initialize with custom options - realistic Earth-like gravity (~3800 px/s²)
+const engine = new GravityEngine({
+  gravity: new Vector2(0, 3800),  // px/s² (Earth's 9.8 m/s² at ~386px/m scale)
+  airDrag: 0.01,
+  timeScale: 1
+});
+
+// Add elements by selector
+engine.addFromSelector('[data-gravity]');
+
+// Or add individually
+const body = engine.addBody({
+  element: document.getElementById('myElement'),
+  mass: 2,
+  elasticity: 0.8,
+  friction: 0.3
+});
+
+// Control the engine
+engine.dropAll();    // Drop all from top
+engine.resetAll();   // Reset to original positions
+engine.toggle();     // Pause/resume
+engine.applyGlobalImpulse(0, -500); // Apply force
+
+// Access individual bodies
+const body = engine.getBodyByElement(element);
+body.applyImpulse(new Vector2(100, 0));
+body.setVelocity(0, 500);</code></pre>
+    </div>
+  </div>
+
+  <!-- Footer (embedded to avoid CORS issues) -->
+  <footer class="footer">
+    <p>&copy; 2026 GravityJS - Physics-based UI Animation Library</p>
+  </footer>
+
+  <!-- Load GravityJS library and initialize components -->
+  <script src="../dist/gravityjs.umd.js"></script>
+  <script>
+    // Initialize UI components (buttons, cards, inputs) with deformation support immediately after library loads
+    function initDeformationDemo() {
+      if (typeof GravityJS !== 'undefined' && typeof GravityJS.initComponents === 'function') {
+        GravityJS.initComponents(document.body);
+        console.log('GravityJS UI components initialized');
+      } else {
+        console.warn('GravityJS not fully loaded yet, retrying...');
+        setTimeout(initDeformationDemo, 100);
+      }
+    }
+
+    // Create engine instance - NOT autoStart, user clicks Start first
+    const engine = new GravityJS.GravityEngine({
+      gravity: new GravityJS.Vector2(0, 3800),
+      airDrag: 0.01,
+      timeScale: 1,
+      autoStart: false
+    });
+
+    // Add all gravity elements - use selector for data attributes to work properly
+    engine.addFromSelector('[data-gravity]');
+
+    // After adding bodies, set initial sleep on each body to prevent immediate falling
+    setTimeout(() => {
+      const bodies = engine.getBodies();
+      bodies.forEach(body => {
+        if (body && typeof body.sleep === 'function') {
+          body.sleep();
+        }
+      });
+    }, 100);
+
+    // Global state for indicator tracking
+    let indicatorInterval = null;
+    const VELOCITY_THRESHOLD = 30;  // px/s - below this, element is considered at rest
+    const SETTLE_VELOCITY = 15;     // Even lower threshold for settling on ground
+
+    /**
+     * Update moving indicators based on actual velocity of each brick
+     */
+    function updateMovingIndicators() {
+      if (!engine.running) return;
+
+      const bodies = engine.getBodies();
+
+      for (let i = 0; i < bodies.length; i++) {
+        const body = bodies[i];
+        const element = body.element;
+
+        if (!element) continue;
+
+        const labelText = element.textContent?.trim() || 'Unknown';
+        let wasMoving = element.classList.contains('moving');
+
+        // Calculate velocity magnitude
+        const velocityMagnitude = Math.abs(body.velocity.x) + Math.abs(body.velocity.y);
+
+        // Determine if element is truly at rest (on ground with very low velocity)
+        const onGround = body.groundY > 0 && body.position.y >= body.groundY - 2;
+        const isAtRest = onGround && velocityMagnitude < SETTLE_VELOCITY;
+
+        let shouldShowIndicator = false;
+
+        if (isAtRest) {
+          // Element is settled at rest - hide indicator and ensure sleeping
+          shouldShowIndicator = false;
+          body.sleep();  // Ensure it stays sleeping for CPU efficiency
+        } else if (velocityMagnitude > VELOCITY_THRESHOLD) {
+          // Element has significant velocity - show indicator and wake up
+          shouldShowIndicator = true;
+          body.wake();  // Wake up from sleep to allow physics updates
+        } else {
+          // Low velocity but not at rest yet - still in transition, show indicator
+          shouldShowIndicator = true;
+        }
+
+
+        // Update class based on state
+        if (shouldShowIndicator) {
+          element.classList.add('moving');
+        } else {
+          element.classList.remove('moving');
+        }
+      }
+    }
+
+    /**
+     * Start the indicator update loop with proper interval management
+     */
+    function startIndicatorTracking() {
+      // Clear any existing interval to prevent duplicates
+      if (indicatorInterval) {
+        clearInterval(indicatorInterval);
+      }
+
+      // Reset all indicators when starting tracking
+      const bodies = engine.getBodies();
+      for (let i = 0; i < bodies.length; i++) {
+        bodies[i].element.classList.remove('moving');
+      }
+
+      // Run update every 100ms to check element states
+      indicatorInterval = setInterval(updateMovingIndicators, 100);
+    }
+
+    /**
+     * Stop the indicator update loop
+     */
+    function stopIndicatorTracking() {
+      if (indicatorInterval) {
+        clearInterval(indicatorInterval);
+        indicatorInterval = null;
+      }
+    }
+
+    // Initialize: start tracking immediately when page loads
+    startIndicatorTracking();
+
+    /**
+     * Enhanced dropAll method for diagonal motion
+     */
+    const dropDiagonally = function() {
+      const bodies = engine.getBodies();
+
+      for (let i = 0; i < bodies.length; i++) {
+        const body = bodies[i];
+        const element = body.element;
+
+        if (!element) continue;
+
+        const friction = parseFloat(element.getAttribute('data-friction')) || 0;
+        const airDrag = parseFloat(element.getAttribute('data-air-drag')) || 0.01;
+
+        const baseHorizontalImpulse = 250;
+        const horizontalFactor = (1 - friction) * (1 - airDrag);
+        const horizontalImpulse = baseHorizontalImpulse * horizontalFactor;
+
+        body.applyImpulse(new GravityJS.Vector2(horizontalImpulse, -300));
+
+        // Don't add 'moving' class here - indicator will show based on actual state
+      }
+
+      this.disabled = true;
+      this.textContent = 'Dropping...';
+      setTimeout(() => {
+        this.disabled = false;
+        this.textContent = 'Drop All (Diagonal)';
+      }, 500);
+    };
+
+    // Button handlers
+    document.getElementById('startBtn').addEventListener('click', function() {
+      engine.start();
+      dropDiagonally.call(this);
+      this.disabled = true;
+      this.textContent = 'Running';
+    });
+
+    document.getElementById('dropBtn').addEventListener('click', dropDiagonally);
+
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      // Stop physics first
+      engine.stop();
+
+      // Reset all bodies to original position and put them back to sleep
+      engine.resetAll();
+
+      // Force DOM update for each body
+      const bodies = engine.getBodies();
+      for (let i = 0; i < bodies.length; i++) {
+        bodies[i].updateElementPosition();
+        bodies[i].sleep();  // Put back to sleep after reset
+      }
+
+      // Reset indicators to hidden state after reset
+      for (let j = 0; j < bodies.length; j++) {
+        bodies[j].element.classList.remove('moving');
+      }
+
+    });
+
+    document.getElementById('toggleBtn').addEventListener('click', function() {
+      engine.toggle();
+      const toggleText = document.getElementById('toggleText');
+      toggleText.textContent = engine.running ? 'Pause' : 'Play';
+
+      // When paused, hide all indicators immediately and put bodies to sleep
+      if (!engine.running) {
+        const bodies = engine.getBodies();
+        for (let i = 0; i < bodies.length; i++) {
+          bodies[i].element.classList.remove('moving');
+          bodies[i].sleep();
+        }
+      } else {
+        // When resumed, wake up all bodies to start animation
+        const bodies = engine.getBodies();
+        for (let i = 0; i < bodies.length; i++) {
+          bodies[i].wake();
+        }
+      }
+    });
+
+    // Deformation zone tracking
+    function updateZoneIndicator(button, zone) {
+      const indicatorId = button.getAttribute('data-zone-indicator');
+      if (!indicatorId) return;
+
+      const indicator = document.getElementById(indicatorId);
+      if (indicator) {
+        indicator.textContent = `Target: ${zone}`;
+        const wasBold = button.style.fontWeight;
+        button.style.fontWeight = 'bold';
+        setTimeout(() => {
+          button.style.fontWeight = wasBold;
+        }, 200);
+      }
+    }
+
+    // Add zone tracking to deformation buttons
+    document.querySelectorAll('[data-zone-indicator]').forEach(button => {
+      button.addEventListener('mousedown', function(e) {
+        updateZoneIndicator(this, getDeformationZone(this, e.clientX, e.clientY));
+      });
+
+      // Touch support
+      button.addEventListener('touchstart', function(e) {
+        const touch = e.touches[0];
+        if (touch) {
+          updateZoneIndicator(this, getDeformationZone(this, touch.clientX, touch.clientY));
+        }
+      });
+    });
+
+    function getForcedDeformationZone(button, clientX, clientY) {
+      const raw = (button.getAttribute('data-gravity-deformation-zone') || '').trim().toLowerCase();
+      if (!raw) return null;
+
+      if (raw === 'corner') {
+        const rect = button.getBoundingClientRect();
+        if (!rect) return 'corner';
+        const horizontal = clientX <= rect.left + rect.width / 2 ? 'left' : 'right';
+        const vertical = clientY <= rect.top + rect.height / 2 ? 'top' : 'bottom';
+        return `${vertical}-${horizontal}`;
+      }
+
+      const allowed = new Set([
+        'center',
+        'left',
+        'right',
+        'top',
+        'bottom',
+        'top-left',
+        'top-right',
+        'bottom-left',
+        'bottom-right',
+      ]);
+      return allowed.has(raw) ? raw : null;
+    }
+
+    function getDeformationZone(button, clientX, clientY) {
+      const forcedZone = getForcedDeformationZone(button, clientX, clientY);
+      if (forcedZone) return forcedZone;
+
+      // This is a simplified version - the actual zone detection happens in computeDeformation
+      // For demo purposes, we'll estimate based on position relative to clicked element
+      const rect = button.getBoundingClientRect();
+      if (!rect) return 'center';
+
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const thresholdX = rect.width * 0.35; // ~35% from center = edge
+      const thresholdY = rect.height * 0.35;
+
+      const distanceX = Math.abs(clientX - centerX);
+      const distanceY = Math.abs(clientY - centerY);
+
+      if (distanceX > thresholdX && distanceY > thresholdY) {
+        return 'corner';
+      } else if (distanceX > thresholdX) {
+        return 'edge-x';
+      } else if (distanceY > thresholdY) {
+        return 'edge-y';
+      } else {
+        return 'center';
+      }
+    }
+
+    // Custom deformation controls
+    const strengthSlider = document.getElementById('customStrength');
+    const depthSlider = document.getElementById('customDepth');
+    const curvatureSlider = document.getElementById('customCurvature');
+    const modeSelect = document.getElementById('customMode');
+    const triggerSelect = document.getElementById('customTrigger');
+    const strengthValue = document.getElementById('strengthValue');
+    const depthValue = document.getElementById('depthValue');
+    const curvatureValue = document.getElementById('curvatureValue');
+
+    if (strengthSlider) {
+      strengthSlider.addEventListener('input', function() {
+        strengthValue.textContent = this.value;
+      });
+    }
+
+    if (depthSlider) {
+      depthSlider.addEventListener('input', function() {
+        depthValue.textContent = this.value;
+      });
+    }
+
+    if (curvatureSlider) {
+      curvatureSlider.addEventListener('input', function() {
+        curvatureValue.textContent = this.value;
+      });
+    }
+
+    function applyCustomSettings() {
+      const strength = parseFloat(strengthSlider?.value || '1.2');
+      const depth = parseFloat(depthSlider?.value || '0.06');
+      const curvature = parseFloat(curvatureSlider?.value || '1.0');
+      const mode = modeSelect?.value || 'collapse';
+      const trigger = triggerSelect?.value || 'click';
+
+      document.querySelectorAll('.customizable-deformation').forEach(button => {
+        button.setAttribute('data-gravity-deformation-strength', strength);
+        button.setAttribute('data-gravity-deformation-depth', depth);
+        button.setAttribute('data-gravity-deformation-curvature', curvature);
+        button.setAttribute('data-gravity-deformation-mode', mode);
+        button.setAttribute('data-gravity-deformation-trigger', trigger);
+      });
+
+      // Flash effect to indicate settings applied
+      const buttons = document.querySelectorAll('.customizable-deformation');
+      buttons.forEach(btn => {
+        btn.style.opacity = '0.8';
+        setTimeout(() => {
+          btn.style.opacity = '1';
+        }, 300);
+      });
+
+      showToast('Settings Applied!', `Deformation updated:\n• Strength: ${strength}\n• Depth: ${depth}\n• Curvature: ${curvature}\n• Mode: ${mode}\n• Trigger: ${trigger}`);
+    }
+
+    /**
+     * Show an animated toast notification that disappears after a delay
+     */
+    function showToast(title, message) {
+      const container = document.querySelector('.toast-container');
+
+      // Create toast element if it doesn't exist
+      let toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.innerHTML = `
+        <span class="toast-icon">✨</span>
+        <div class="toast-content">
+          <div class="toast-title">${escapeHtml(title)}</div>
+          <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+      `;
+
+      // Add to container
+      if (!container) {
+        const newContainer = document.createElement('div');
+        newContainer.className = 'toast-container';
+        newContainer.appendChild(toastEl);
+        document.body.appendChild(newContainer);
+      } else {
+        container.appendChild(toastEl);
+      }
+
+      // Auto-remove after 4 seconds with fade-out animation
+      setTimeout(() => {
+        toastEl.classList.add('toast-disappearing');
+        setTimeout(() => {
+          if (toastEl.parentNode) {
+            toastEl.parentNode.removeChild(toastEl);
+          }
+        }, 500); // Wait for fade-out to complete
+      }, 4000);
+
+      // Remove on click
+      toastEl.addEventListener('click', () => {
+        toastEl.classList.add('toast-disappearing');
+        setTimeout(() => {
+          if (toastEl.parentNode) {
+            toastEl.parentNode.removeChild(toastEl);
+          }
+        }, 500);
+      });
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML.replace(/\n/g, '<br>');
+    }
+
+    // Store globally for debugging
+    window.engine = engine;
+
+    // Initialize UI components after GravityJS is loaded and gravity bodies are set up
+    initDeformationDemo();
+  </script>
+
+
+</body>
+</html>

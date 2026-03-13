@@ -1,0 +1,198 @@
+/* GravityJS - CSS Styling Utilities */
+
+/* Base styles for gravity-enabled elements */
+.gravity-element {
+  position: relative;
+  will-change: transform;
+}
+
+/* Element with different mass values */
+[data-mass="0.5"],
+.gravity-light {
+  /* Light elements fall slower, bounce more */
+}
+
+[data-mass="2"],
+.gravity-heavy {
+  /* Heavy elements fall faster, bounce less */
+}
+
+/* Predefined elasticity classes */
+.gravity-bouncy {
+  --gravity-elasticity: 0.9;
+}
+
+.gravity-rubbery {
+  --gravity-elasticity: 0.6;
+}
+
+.gravity-dull {
+  --gravity-elasticity: 0.2;
+}
+
+.gravity-static {
+  --gravity-fixed: true;
+}
+
+/* Spring animation presets */
+.gravity-spring {
+  --gravity-use-spring: true;
+}
+
+.gravity-spring-snappy {
+  --gravity-spring-stiffness: 300;
+  --gravity-spring-damping: 15;
+}
+
+.gravity-spring-gentle {
+  --gravity-spring-stiffness: 80;
+  --gravity-spring-damping: 8;
+}
+
+/* Ground element (visual reference) */
+.gravity-ground {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0, 0, 0, 0.1) 20%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Drop zone indicator */
+.gravity-drop-zone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 99, 97, 0.1),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Debug overlay */
+.gravity-debug {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffa600;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.gravity-debug-item {
+  margin: 2px 0;
+}
+
+/* Visual feedback for draggable elements */
+.gravity-draggable {
+  cursor: grab;
+}
+
+.gravity-draggable:active {
+  cursor: grabbing;
+}
+
+/* Smooth transition when not using physics */
+.gravity-smooth {
+  transition: transform 0.3s ease-out;
+}
+
+/* Stagger animation delays for multiple elements */
+.gravity-stagger-1 { animation-delay: 0.1s; }
+.gravity-stagger-2 { animation-delay: 0.2s; }
+.gravity-stagger-3 { animation-delay: 0.3s; }
+.gravity-stagger-4 { animation-delay: 0.4s; }
+.gravity-stagger-5 { animation-delay: 0.5s; }
+
+/* Preset colors for demo elements */
+.gravity-box {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.gravity-box-red { background: linear-gradient(135deg, #ff6361 0%, #ff8531 100%); }
+.gravity-box-blue { background: linear-gradient(135deg, #003f5c 0%, #2c4875 100%); }
+.gravity-box-green { background: linear-gradient(135deg, #00202e 0%, #003f5c 100%); }
+.gravity-box-yellow { background: linear-gradient(135deg, #ffa600 0%, #ffd380 100%); }
+.gravity-box-purple { background: linear-gradient(135deg, #8a508f 0%, #bc5090 100%); }
+
+/* Circle variants */
+.gravity-circle {
+  border-radius: 50%;
+}
+
+/* Card style */
+.gravity-card {
+  width: 150px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  color: #333;
+  font-weight: 400;
+  text-shadow: none;
+}
+
+/* Button style */
+.gravity-button {
+  padding: 12px 24px;
+  background: #ff6361;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(255, 99, 97, 0.3);
+}
+
+.gravity-button:hover {
+  background: #ff8531;
+}
+
+.gravity-button:active {
+  transform: scale(0.95);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .gravity-box {
+    width: 60px;
+    height: 60px;
+    font-size: 12px;
+  }
+
+  .gravity-card {
+    width: 120px;
+    padding: 12px;
+  }
+}

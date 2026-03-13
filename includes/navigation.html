@@ -1,0 +1,22 @@
+<nav class="nav">
+  <a href="index.html" class="nav-link">Animations</a>
+  <a href="components.html" class="nav-link">Components</a>
+  <a href="demo-scroll-animation.html" class="nav-link">Scroll FX</a>
+</nav>
+
+<script>
+// Set active navigation link based on current page
+(function() {
+  const currentPage = window.location.pathname.split('/').pop();
+  const navLinks = document.querySelectorAll('.nav .nav-link');
+
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    if (currentPage === href || (currentPage === '' && href === 'index.html')) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+})();
+</script>

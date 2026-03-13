@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <title>GravityJS - Scroll Animation Demo</title>
+	  <link rel="stylesheet" href="../src/gravity.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #00202e 0%, #003f5c 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+	    /* Shared logo style */
+	    .logo {
+	      width: 20px;
+	      height: 20px;
+	      margin-right: 10px;
+	      vertical-align: middle;
+	      display: inline-block;
+	    }
+
+	    /* Navigation (identical to other pages)  */
+    .nav { display: flex; gap: 8px; justify-content: center; padding: 20px; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 300; }
+    .nav-link { padding: 10px 24px; border-radius: 8px; text-decoration: none; color: rgba(255,255,255,0.7); font-weight: 500; transition: all 0.3s ease; border: 1px solid transparent; }
+    .nav-link:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link.active { background: rgba(0,63,92,0.3); color: white; border-color: rgba(0,63,92,0.5); }
+
+    /* Page layout  */
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+    h1 { color: white; font-size: 2.5rem; margin-bottom: 10px; text-align: center; }
+    .subtitle { color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 40px; font-size: 1.1rem; }
+
+    /* Demo sections  */
+    .section {
+      padding: 80px 40px;
+      margin: 80px 0;
+      background: linear-gradient(135deg, #8a508f 0%, #bc5090 100%);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .section h2 { margin-top: 0; font-size: 2rem; text-align: center; margin-bottom: 16px; }
+    .section p  { max-width: 600px; margin: 0 auto 20px; font-size: 1.05rem; text-align: center; opacity: 0.9; }
+    .code-example {
+      background: rgba(0,0,0,0.3);
+      color: rgba(255,255,255,0.85);
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Info box */
+    .info-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px 24px;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .info-box code { background: rgba(255,255,255,0.1); padding: 2px 7px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; color: #ffd380; }
+
+    /* Physics controls panel */
+    .physics-panel {
+      position: fixed;
+      top: 84px;
+      right: 20px;
+      width: 258px;
+      background: rgba(10,10,25,0.92);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 18px 20px 16px;
+      z-index: 200;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .physics-panel h3 {
+      color: white;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .ctrl-row { margin-bottom: 12px; }
+    .ctrl-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255,255,255,0.78);
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+    }
+    .ctrl-label span { color: #ff8531; font-weight: 700; min-width: 36px; text-align: right; }
+    input[type="range"] { width: 100%; accent-color: #ff6361; cursor: pointer; }
+    .ctrl-select {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      color: white;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .ctrl-select option { background: #00202e; }
+    .panel-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-apply {
+      flex: 1;
+      padding: 8px 0;
+      background: #ff6361;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-apply:hover { background: #ff8531; }
+    .btn-defaults {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-defaults:hover { background: rgba(255,255,255,0.16); color: white; }
+
+    footer { text-align: center; color: rgba(255,255,255,0.4); padding: 60px 0 40px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="index.html" class="nav-link"> Animations</a>
+    <a href="components.html" class="nav-link"> Components</a>
+    <a href="demo-scroll-animation.html" class="nav-link active"> Scroll FX</a>
+  </nav>
+
+  <!-- Physics Controls Panel -->
+  <aside class="physics-panel">
+    <h3> Physics Variables</h3>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label">Bounce <span id="bounceVal">0.50</span></div>
+      <input type="range" id="bounceInput" min="0" max="1" step="0.01" value="0.5">
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label">Friction <span id="frictionVal">0.25</span></div>
+      <input type="range" id="frictionInput" min="0" max="1" step="0.01" value="0.25">
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label">Elasticity <span id="elasticityVal">0.65</span></div>
+      <input type="range" id="elasticityInput" min="0" max="1" step="0.01" value="0.65">
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label">Strength <span id="strengthVal">0.50</span></div>
+      <input type="range" id="strengthInput" min="0.05" max="2" step="0.05" value="0.5">
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label">Direction</div>
+      <select id="directionInput" class="ctrl-select">
+        <option value="y" selected>Y vertical</option>
+        <option value="x">X horizontal</option>
+        <option value="both">Both</option>
+      </select>
+    </div>
+
+    <div class="panel-actions">
+      <button class="btn-apply" id="applyBtn">Apply &amp; Reset</button>
+      <button class="btn-defaults" id="defaultsBtn">Defaults</button>
+    </div>
+  </aside>
+
+		  <div class="container">
+		    <h1><img class="logo" src="../assets/logo.webp" style="height:64px;width:64px;margin-right:12px;margin-bottom:5px;filter:drop-shadow(0px -4px 12px rgba(250, 150, 250, 0.5));"/>GravityJS</h1>
+    <p class="subtitle">Physics-driven scroll-triggered animations scroll down to see them!</p>
+
+    <div class="info-box">
+      <strong style="color:white;">Trigger variants:</strong>
+      <code>viewport</code> · <code>half</code> · <code>previous</code> · <code>custom</code> ·
+      <code>progress</code> · <code>easing</code> · <code>bounce</code> · <code>spring</code><br>
+      Adjust the <strong style="color:white;"> Physics Variables</strong> panel, then click
+      <strong style="color:white;">Apply &amp; Reset</strong> to replay all animations with new values.
+    </div>
+
+    <!-- Viewport Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="viewport">
+      <h2>Viewport Trigger</h2>
+      <p>Animates when the element enters the viewport.</p>
+      <div class="code-example">data-gravity-scroll-trigger="viewport"</div>
+    </section>
+
+    <!-- Half Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="half">
+      <h2>Half Trigger</h2>
+      <p>Animates when the element is 50 % into the viewport.</p>
+      <div class="code-example">data-gravity-scroll-trigger="half"</div>
+    </section>
+
+    <!-- Previous Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="previous">
+      <h2>Previous Trigger</h2>
+      <p>Animates when the previous sibling is fully visible.</p>
+      <div class="code-example">data-gravity-scroll-trigger="previous"</div>
+    </section>
+
+    <!-- Custom Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="custom" data-gravity-scroll-offset="100">
+      <h2>Custom Trigger</h2>
+      <p>Animates when 100 px from the viewport top (custom offset).</p>
+      <div class="code-example">data-gravity-scroll-trigger="custom" data-gravity-scroll-offset="100"</div>
+    </section>
+
+    <!-- Progress Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="progress">
+      <h2>Progress Trigger</h2>
+      <p>Continuously tracks scroll progress parallax-style.</p>
+      <div class="code-example">data-gravity-scroll-trigger="progress"</div>
+    </section>
+
+    <!-- Easing Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="easing">
+      <h2>Easing Trigger</h2>
+      <p>Overdamped spring smooth, no overshoot.</p>
+      <div class="code-example">data-gravity-scroll-trigger="easing"</div>
+    </section>
+
+    <!-- Bounce Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="bounce">
+      <h2>Bounce Trigger</h2>
+      <p>Underdamped spring playful overshoot then settle.</p>
+      <div class="code-example">data-gravity-scroll-trigger="bounce"</div>
+    </section>
+
+    <!-- Spring Trigger -->
+    <section class="section" data-gravity-scroll data-gravity-scroll-trigger="spring" data-gravity-scroll-material="jelly">
+      <h2>Spring Trigger</h2>
+      <p>Highly underdamped oscillates like jelly.</p>
+      <div class="code-example">data-gravity-scroll-trigger="spring" data-gravity-scroll-material="jelly"</div>
+    </section>
+
+    <!-- Advanced Example -->
+    <section class="section"
+      data-gravity-scroll
+      data-gravity-scroll-trigger="viewport"
+      data-gravity-scroll-direction="both"
+      data-gravity-scroll-strength="0.8"
+      data-gravity-scroll-material="rubber"
+      data-gravity-motion-blur>
+      <h2>Advanced Example</h2>
+      <p>Both-axis movement · strength 0.8 · rubber material · motion blur.</p>
+      <div class="code-example">data-gravity-scroll-trigger="viewport"
+data-gravity-scroll-direction="both"
+data-gravity-scroll-strength="0.8"
+data-gravity-scroll-material="rubber"
+data-gravity-motion-blur</div>
+    </section>
+
+    <footer><p>GravityJS Open Source Physics Animation Library</p></footer>
+  </div>
+
+	  <script src="../dist/gravityjs.umd.js"></script>
+  <script>
+    // Physics variable defaults
+    const DEFAULTS = { bounce: 0.5, friction: 0.25, elasticity: 0.65, strength: 0.5, direction: 'y' };
+
+    // DOM refs
+    const inputs = {
+      bounce:     document.getElementById('bounceInput'),
+      friction:   document.getElementById('frictionInput'),
+      elasticity: document.getElementById('elasticityInput'),
+      strength:   document.getElementById('strengthInput'),
+      direction:  document.getElementById('directionInput'),
+    };
+    const displays = {
+      bounce:     document.getElementById('bounceVal'),
+      friction:   document.getElementById('frictionVal'),
+      elasticity: document.getElementById('elasticityVal'),
+      strength:   document.getElementById('strengthVal'),
+    };
+
+    // Live value display
+    ['bounce', 'friction', 'elasticity', 'strength'].forEach(key => {
+      inputs[key].addEventListener('input', () => {
+        displays[key].textContent = parseFloat(inputs[key].value).toFixed(2);
+      });
+    });
+
+    // Component lifecycle
+    let teardown = GravityJS.initComponents();
+
+    function applyPhysics() {
+      const bounce     = parseFloat(inputs.bounce.value);
+      const friction   = parseFloat(inputs.friction.value);
+      const elasticity = parseFloat(inputs.elasticity.value);
+      const strength   = parseFloat(inputs.strength.value);
+      const direction  = inputs.direction.value;
+
+      // Destroy existing component instances cleanly
+      teardown();
+
+      // Push new physics values onto every scroll-animated element
+      document.querySelectorAll('[data-gravity-scroll]').forEach(el => {
+        el.setAttribute('data-gravity-bounce',            bounce.toFixed(2));
+        el.setAttribute('data-gravity-friction',          friction.toFixed(2));
+        el.setAttribute('data-gravity-elasticity',        elasticity.toFixed(2));
+        el.setAttribute('data-gravity-scroll-strength',   strength.toFixed(2));
+        el.setAttribute('data-gravity-scroll-direction',  direction);
+      });
+
+      // Scroll to top, then reinitialise so entrance animations replay
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => { teardown = GravityJS.initComponents(); }, 420);
+    }
+
+    function resetDefaults() {
+      inputs.bounce.value     = DEFAULTS.bounce;
+      inputs.friction.value   = DEFAULTS.friction;
+      inputs.elasticity.value = DEFAULTS.elasticity;
+      inputs.strength.value   = DEFAULTS.strength;
+      inputs.direction.value  = DEFAULTS.direction;
+      ['bounce', 'friction', 'elasticity', 'strength'].forEach(key => {
+        displays[key].textContent = parseFloat(inputs[key].value).toFixed(2);
+      });
+      applyPhysics();
+    }
+
+    document.getElementById('applyBtn').addEventListener('click', applyPhysics);
+    document.getElementById('defaultsBtn').addEventListener('click', resetDefaults);
+  </script>
+</body>
+</html>

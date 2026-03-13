@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GravityJS - Components Demo</title>
+	  <link rel="stylesheet" href="../src/gravity.css">
+	  <link rel="stylesheet" href="../includes/common-styles.css">
+  <style>
+	    /* Shared logo style */
+	    .logo {
+	      width: 20px;
+	      height: 20px;
+	      margin-right: 10px;
+	      vertical-align: middle;
+	      display: inline-block;
+	    }
+
+	    /* Component-specific styles */
+    .controls {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 16px 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .button-group { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .demo-btn { padding: 14px 32px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; position: relative; transform-origin: center center; }
+    .demo-btn-primary { background: #003f5c; color: white; }
+    .demo-btn-secondary { background: #6b7280; color: white; }
+    .demo-btn-success { background: #8a508f; color: white; }
+    .demo-btn-danger { background: #ff6361; color: white; }
+    .demo-btn-warning { background: #ffa600; color: white; }
+    .demo-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.6); }
+
+    .banner { background: linear-gradient(135deg, #003f5c 0%, #2c4875 100%); border-radius: 12px; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; opacity: 0; transform: translateX(-120px); }
+    .banner-content { flex: 1; min-width: 250px; }
+    .banner-title { color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 4px; }
+    .banner-text { color: rgba(255,255,255,0.9); font-size: 0.95rem; }
+    .banner-info { background: linear-gradient(135deg, #8a508f 0%, #bc5090 100%); }
+    .banner-success { background: linear-gradient(135deg, #ff8531 0%, #ffa600 100%); }
+
+    .accordion { display: flex; flex-direction: column; gap: 8px; }
+    .accordion-item { background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .accordion-header { padding: 18px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 600; }
+    .accordion-icon { font-size: 1.2rem; }
+    .accordion-item.active .accordion-icon { transform: rotate(180deg); }
+    .accordion-content { max-height: 0; overflow: hidden; }
+    .accordion-body { padding: 0 24px 18px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.6; }
+
+    .menu-container { background: rgba(0, 0, 0, 0.3); border-radius: 12px; padding: 12px; }
+    .menu { display: flex; gap: 4px; list-style: none; flex-wrap: wrap; }
+    .menu-item { position: relative; }
+    .menu-link { display: block; padding: 12px 24px; color: rgba(255, 255, 255, 0.8); text-decoration: none; border-radius: 8px; font-weight: 500; transform-origin: center center; }
+    .menu-link.active { background: rgba(0, 63, 92, 0.3); color: white; }
+    .menu-dropdown { position: absolute; top: 100%; left: 0; min-width: 180px; background: rgba(30, 30, 50, 0.95); border-radius: 8px; padding: 8px 0; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transform-origin: top left; }
+    .dropdown-link { display: block; padding: 10px 20px; color: rgba(255, 255, 255, 0.7); text-decoration: none; }
+    .dropdown-link:hover { background: rgba(0, 63, 92, 0.2); color: white; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .card { background: rgba(255, 255, 255, 0.05); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); transform-origin: center center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .card-image { height: 140px; background: linear-gradient(135deg, #8a508f 0%, #bc5090 100%); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+    .card-body { padding: 24px; }
+    .card-title { color: white; font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+    .card-text { color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px; }
+
+    .form-group { margin-bottom: 24px; }
+    .form-label { display: block; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem; font-weight: 500; margin-bottom: 10px; }
+    .form-input { width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: white; font-size: 14px; transform-origin: top center; }
+    .form-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+
+    .badge-group { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .badge { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .badge-primary { background: rgba(0, 63, 92, 0.2); color: #2c4875; }
+    .badge-success { background: rgba(138, 80, 143, 0.2); color: #8a508f; }
+    .badge-warning { background: rgba(255, 166, 0, 0.2); color: #ffa600; }
+    .badge-danger { background: rgba(255, 99, 97, 0.2); color: #ff6361; }
+
+    .alert { padding: 18px 24px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 14px; opacity: 0; transform: translateX(-100px); }
+    .alert-icon { font-size: 1.3rem; }
+    .alert-content { flex: 1; }
+    .alert-title { font-weight: 600; margin-bottom: 4px; color: white; }
+    .alert-text { font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+    .alert-info { background: rgba(0,63,92,0.15); border: 1px solid rgba(0,63,92,0.3); }
+    .alert-success { background: rgba(138,80,143,0.15); border: 1px solid rgba(138,80,143,0.3); }
+    .alert-warning { background: rgba(255,166,0,0.15); border: 1px solid rgba(255,166,0,0.3); }
+    .alert-danger { background: rgba(255,99,97,0.15); border: 1px solid rgba(255,99,97,0.3); }
+
+    .progress-container { margin-bottom: 20px; }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 10px; color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 5px; width: 0; }
+    .progress-primary .progress-fill { background: linear-gradient(90deg, #003f5c, #2c4875); }
+    .progress-success .progress-fill { background: linear-gradient(90deg, #8a508f, #bc5090); }
+    .progress-warning .progress-fill { background: linear-gradient(90deg, #ffa600, #ffd380); }
+
+    /* Materials showcase */
+    .material-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .material-card { background: rgba(255,255,255,0.05); border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); padding: 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+    .material-icon { font-size: 2.2rem; }
+    .material-name { color: white; font-size: 1rem; font-weight: 700; letter-spacing: 0.04em; }
+    .material-desc { color: rgba(255,255,255,0.55); font-size: 0.82rem; line-height: 1.4; min-height: 36px; }
+    .material-demo { margin-top: 8px; padding: 12px 28px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transform-origin: center center; }
+    .material-rigid  { background: #00202e; color: white; }
+    .material-metal  { background: linear-gradient(135deg, #6b7280, #9ca3af); color: white; }
+    .material-rubber { background: #8a508f; color: white; }
+    .material-jelly  { background: linear-gradient(135deg, #ff6361, #ff8531); color: white; }
+
+    /* Tilt showcase */
+    .tilt-group { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+    .tilt-card { background: rgba(255,255,255,0.06); border-radius: 16px; border: 1px solid rgba(255,255,255,0.12); padding: 32px 28px; text-align: center; cursor: pointer; transform-origin: center center; min-width: 180px; }
+    .tilt-card-emoji { font-size: 2.4rem; margin-bottom: 10px; }
+    .tilt-card-label { color: white; font-weight: 600; font-size: 0.95rem; }
+    .tilt-card-sub   { color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <!-- Navigation Container -->
+  <nav class="nav">
+    <a href="index.html" data-gravity-navigation class="nav-link">Animations</a>
+    <a href="components.html" data-gravity-navigation class="nav-link active">Components</a>
+    <a href="demo-scroll-animation.html" data-gravity-navigation class="nav-link">Scroll FX</a>
+  </nav>
+
+		  <div class="container">
+		    <h1><img class="logo" src="../assets/logo.webp" style="height:64px;width:64px;margin-right:12px;margin-bottom:5px;filter:drop-shadow(0px -4px 12px rgba(0,250,250,0.5));"/>GravityJS</h1>
+    <p class="subtitle">All components use real physics (Hooke's Law)</p>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="replayBtn">Replay Animations</button>
+    </div>
+
+    <!-- Buttons Section -->
+    <h2 class="section-title">Buttons - Real Physics Hover</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law (F = -kx) with real physics</span>
+      <div class="physics-controls" id="buttonControls">
+        <label>Scale: <input type="range" id="btnScale" min="1" max="1.3" step="0.01" value="1.08"><span id="btnScaleVal">1.08</span></label>
+        <label>Bounce: <input type="range" id="btnBounce" min="0" max="1" step="0.05" value="0.6"><span id="btnBounceVal">0.6</span></label>
+        <label>Friction: <input type="range" id="btnFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="btnFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="btnElasticity" min="0" max="1" step="0.05" value="0.6"><span id="btnElasticityVal">0.6</span></label>
+      </div>
+      <div class="button-group">
+        <button class="demo-btn demo-btn-primary" data-gravity-button>Primary</button>
+        <button class="demo-btn demo-btn-secondary" data-gravity-button>Secondary</button>
+        <button class="demo-btn demo-btn-success" data-gravity-button>Success</button>
+        <button class="demo-btn demo-btn-danger" data-gravity-button>Danger</button>
+        <button class="demo-btn demo-btn-warning" data-gravity-button>Warning</button>
+        <button class="demo-btn demo-btn-outline" data-gravity-button>Outline</button>
+      </div>
+    </div>
+
+    <!-- Banners Section -->
+    <h2 class="section-title">Banners - Real Physics Slide</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for slide-in animation</span>
+      <div class="physics-controls" id="bannerControls">
+        <label>Distance: <input type="range" id="bannerDist" min="50" max="200" step="10" value="120"><span id="bannerDistVal">120px</span></label>
+        <label>Bounce: <input type="range" id="bannerBounce" min="0" max="1" step="0.05" value="0.7"><span id="bannerBounceVal">0.7</span></label>
+        <label>Friction: <input type="range" id="bannerFriction" min="0" max="0.9" step="0.05" value="0.2"><span id="bannerFrictionVal">0.2</span></label>
+        <label>Elasticity: <input type="range" id="bannerElasticity" min="0" max="1" step="0.05" value="0.7"><span id="bannerElasticityVal">0.7</span></label>
+      </div>
+      <div id="bannersSection">
+        <div class="banner banner-info" id="banner1" data-gravity-banner data-gravity-direction="left" data-gravity-delay="0" style="margin-bottom: 16px;">
+          <div class="banner-content"><div class="banner-title">New Feature Released!</div><div class="banner-text">Check out the latest GravityJS update with improved physics.</div></div>
+        </div>
+        <div class="banner banner-success" id="banner2" data-gravity-banner data-gravity-direction="right" data-gravity-delay="200">
+          <div class="banner-content"><div class="banner-title">Success!</div><div class="banner-text">Your changes have been saved successfully.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion Section -->
+    <h2 class="section-title">Accordion - Real Physics</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for open/close animation</span>
+      <div class="physics-controls" id="accordionControls">
+        <label>Bounce: <input type="range" id="accBounce" min="0" max="1" step="0.05" value="0.6"><span id="accBounceVal">0.6</span></label>
+        <label>Friction: <input type="range" id="accFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="accFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="accElasticity" min="0" max="1" step="0.05" value="0.6"><span id="accElasticityVal">0.6</span></label>
+      </div>
+      <div class="accordion" id="accordionSection">
+        <div class="accordion-item" data-gravity-accordion>
+          <div class="accordion-header"><span>What is GravityJS?</span><span class="accordion-icon">◂</span></div>
+          <div class="accordion-content"><div class="accordion-body">GravityJS is a physics-based animation library that brings real-world gravity effects to your web elements.</div></div>
+        </div>
+        <div class="accordion-item" data-gravity-accordion>
+          <div class="accordion-header"><span>How do I get started?</span><span class="accordion-icon">◂</span></div>
+          <div class="accordion-content"><div class="accordion-body">Simply add the data-gravity attribute to any HTML element, and it will automatically respond to physics.</div></div>
+        </div>
+        <div class="accordion-item" data-gravity-accordion>
+          <div class="accordion-header"><span>Is it free to use?</span><span class="accordion-icon">◂</span></div>
+          <div class="accordion-content"><div class="accordion-body">Yes! GravityJS is open source and completely free to use in both personal and commercial projects.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu Section -->
+    <h2 class="section-title">Menu - Real Physics Hover</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law with real physics</span>
+      <div class="physics-controls" id="menuControls">
+        <label>Scale: <input type="range" id="menuScale" min="1" max="1.3" step="0.01" value="1.1"><span id="menuScaleVal">1.1</span></label>
+        <label>Bounce: <input type="range" id="menuBounce" min="0" max="1" step="0.05" value="0.5"><span id="menuBounceVal">0.5</span></label>
+        <label>Friction: <input type="range" id="menuFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="menuFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="menuElasticity" min="0" max="1" step="0.05" value="0.5"><span id="menuElasticityVal">0.5</span></label>
+      </div>
+      <div class="menu-container">
+        <ul class="menu">
+          <li class="menu-item"><a href="#" class="menu-link active" data-gravity-menu>Home</a></li>
+          <li class="menu-item"><a href="#" class="menu-link" data-gravity-menu>Products</a>
+            <div class="menu-dropdown"><a href="#" class="dropdown-link">GravityJS Core</a><a href="#" class="dropdown-link">Plugins</a><a href="#" class="dropdown-link">Templates</a></div>
+          </li>
+          <li class="menu-item"><a href="#" class="menu-link" data-gravity-menu>Documentation</a></li>
+          <li class="menu-item"><a href="#" class="menu-link" data-gravity-menu>Examples</a>
+            <div class="menu-dropdown"><a href="#" class="dropdown-link">Basic Demos</a><a href="#" class="dropdown-link">Advanced</a><a href="#" class="dropdown-link">Tutorials</a></div>
+          </li>
+          <li class="menu-item"><a href="#" class="menu-link" data-gravity-menu>Contact</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Cards Section -->
+    <h2 class="section-title">Cards - Real Physics Hover</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for scale and shadow</span>
+      <div class="physics-controls" id="cardControls">
+        <label>Scale: <input type="range" id="cardScale" min="1" max="1.2" step="0.01" value="1.05"><span id="cardScaleVal">1.05</span></label>
+        <label>Shadow: <input type="range" id="cardShadow" min="0" max="50" step="5" value="30"><span id="cardShadowVal">30px</span></label>
+        <label>Bounce: <input type="range" id="cardBounce" min="0" max="1" step="0.05" value="0.5"><span id="cardBounceVal">0.5</span></label>
+        <label>Friction: <input type="range" id="cardFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="cardFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="cardElasticity" min="0" max="1" step="0.05" value="0.6"><span id="cardElasticityVal">0.6</span></label>
+      </div>
+      <div class="card-grid">
+        <div class="card" data-gravity-card>
+          <div class="card-image">⚡</div>
+          <div class="card-body"><div class="card-title">Fast Performance</div><div class="card-text">GravityJS is optimized for smooth 60fps animations using requestAnimationFrame.</div></div>
+        </div>
+        <div class="card" data-gravity-card>
+          <div class="card-image">🔧</div>
+          <div class="card-body"><div class="card-title">Fully Customizable</div><div class="card-text">Control mass, elasticity, friction, air drag, and more with simple data attributes.</div></div>
+        </div>
+        <div class="card" data-gravity-card>
+          <div class="card-image">📱</div>
+          <div class="card-body"><div class="card-title">Mobile Friendly</div><div class="card-text">Works great on all devices with touch support and responsive behavior.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Elements Section -->
+    <h2 class="section-title">Form Elements - Real Physics</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for focus animation</span>
+      <div class="physics-controls" id="inputControls">
+        <label>Scale: <input type="range" id="inputScale" min="1" max="1.1" step="0.01" value="1.02"><span id="inputScaleVal">1.02</span></label>
+        <label>Bounce: <input type="range" id="inputBounce" min="0" max="1" step="0.05" value="0.5"><span id="inputBounceVal">0.5</span></label>
+        <label>Friction: <input type="range" id="inputFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="inputFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="inputElasticity" min="0" max="1" step="0.05" value="0.6"><span id="inputElasticityVal">0.6</span></label>
+      </div>
+      <div style="max-width: 450px;">
+        <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" placeholder="you@example.com" data-gravity-input></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" placeholder="Enter your password" data-gravity-input></div>
+        <div class="form-group"><label class="form-label">Country</label><select class="form-input form-select" data-gravity-input><option>Select a country</option><option>United States</option><option>United Kingdom</option><option>Canada</option><option>Australia</option></select></div>
+      </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <h2 class="section-title">Alerts - Real Physics Slide</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for slide-in animation</span>
+      <div class="physics-controls" id="alertControls">
+        <label>Distance: <input type="range" id="alertDist" min="50" max="200" step="10" value="100"><span id="alertDistVal">100px</span></label>
+        <label>Bounce: <input type="range" id="alertBounce" min="0" max="1" step="0.05" value="0.6"><span id="alertBounceVal">0.6</span></label>
+        <label>Friction: <input type="range" id="alertFriction" min="0" max="0.9" step="0.05" value="0.3"><span id="alertFrictionVal">0.3</span></label>
+        <label>Elasticity: <input type="range" id="alertElasticity" min="0" max="1" step="0.05" value="0.6"><span id="alertElasticityVal">0.6</span></label>
+      </div>
+      <div id="alertsSection">
+        <div class="alert alert-info" id="alert1" data-gravity-alert data-gravity-direction="left" data-gravity-delay="0"><span class="alert-icon">ℹ️</span><div class="alert-content"><div class="alert-title">Information</div><div class="alert-text">This is an informational message for the user.</div></div></div>
+        <div class="alert alert-success" id="alert2" data-gravity-alert data-gravity-direction="right" data-gravity-delay="200"><span class="alert-icon">✅</span><div class="alert-content"><div class="alert-title">Success</div><div class="alert-text">Your action was completed successfully!</div></div></div>
+        <div class="alert alert-warning" id="alert3" data-gravity-alert data-gravity-direction="left" data-gravity-delay="400"><span class="alert-icon">⚠️</span><div class="alert-content"><div class="alert-title">Warning</div><div class="alert-text">Please review your input before proceeding.</div></div></div>
+      </div>
+    </div>
+
+    <!-- Badges Section -->
+    <h2 class="section-title">Badges - Real Physics Pulse</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for pulse animation</span>
+      <div class="physics-controls" id="badgeControls">
+        <label>Scale: <input type="range" id="badgeScale" min="1" max="1.3" step="0.01" value="1.15"><span id="badgeScaleVal">1.15</span></label>
+        <label>Bounce: <input type="range" id="badgeBounce" min="0" max="1" step="0.05" value="0.6"><span id="badgeBounceVal">0.6</span></label>
+        <label>Friction: <input type="range" id="badgeFriction" min="0" max="0.9" step="0.05" value="0.2"><span id="badgeFrictionVal">0.2</span></label>
+        <label>Elasticity: <input type="range" id="badgeElasticity" min="0" max="1" step="0.05" value="0.7"><span id="badgeElasticityVal">0.7</span></label>
+      </div>
+      <div class="badge-group">
+        <span class="badge badge-primary" data-gravity-badge>Primary</span>
+        <span class="badge badge-success" data-gravity-badge data-gravity-interval="2200">Success</span>
+        <span class="badge badge-warning" data-gravity-badge data-gravity-interval="2600">Warning</span>
+        <span class="badge badge-danger" data-gravity-badge data-gravity-interval="3000">Danger</span>
+      </div>
+    </div>
+
+    <!-- Progress Bars Section -->
+    <h2 class="section-title">Progress Bars - Real Physics</h2>
+    <div class="demo-section">
+      <span class="demo-label">Uses Hooke's Law for width animation</span>
+      <div class="physics-controls" id="progressControls">
+        <label>Bounce: <input type="range" id="progBounce" min="0" max="1" step="0.05" value="0.5"><span id="progBounceVal">0.5</span></label>
+        <label>Friction: <input type="range" id="progFriction" min="0" max="0.9" step="0.05" value="0.4"><span id="progFrictionVal">0.4</span></label>
+        <label>Elasticity: <input type="range" id="progElasticity" min="0" max="1" step="0.05" value="0.5"><span id="progElasticityVal">0.5</span></label>
+      </div>
+      <div>
+        <div class="progress-container progress-primary"><div class="progress-label"><span>Upload Progress</span><span>75%</span></div><div class="progress-bar" data-gravity-progress data-gravity-target="75"><div class="progress-fill"></div></div></div>
+        <div class="progress-container progress-success"><div class="progress-label"><span>Download Complete</span><span>100%</span></div><div class="progress-bar" data-gravity-progress data-gravity-target="100"><div class="progress-fill"></div></div></div>
+        <div class="progress-container progress-warning"><div class="progress-label"><span>Processing</span><span>45%</span></div><div class="progress-bar" data-gravity-progress data-gravity-target="45"><div class="progress-fill"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Materials Section -->
+    <h2 class="section-title">Materials - Mechanics of Materials</h2>
+    <div class="demo-section">
+      <span class="demo-label">Hover & click each material to feel different spring constants, mass, and squash-and-stretch deformation</span>
+      <div class="material-grid">
+        <div class="material-card">
+          <div class="material-icon">🪨</div>
+          <div class="material-name">Rigid</div>
+          <div class="material-desc">Very stiff, well-damped. No deformation. Glass / hard plastic feel.</div>
+          <button class="material-demo material-rigid" data-gravity-button data-gravity-material="rigid" data-gravity-bounce="0.6" data-gravity-friction="0.3" data-gravity-elasticity="0.6">Rigid</button>
+        </div>
+        <div class="material-card">
+          <div class="material-icon">🔩</div>
+          <div class="material-name">Metal</div>
+          <div class="material-desc">Heavy, slight overshoot. Barely any squash. Dense, authoritative snap.</div>
+          <button class="material-demo material-metal" data-gravity-button data-gravity-material="metal" data-gravity-bounce="0.6" data-gravity-friction="0.3" data-gravity-elasticity="0.6" data-gravity-motion-blur="0.05">Metal</button>
+        </div>
+        <div class="material-card">
+          <div class="material-icon">🎾</div>
+          <div class="material-name">Rubber</div>
+          <div class="material-desc">Balanced bounce with visible squash-and-stretch. Natural elastic response.</div>
+          <button class="material-demo material-rubber" data-gravity-button data-gravity-material="rubber" data-gravity-bounce="0.7" data-gravity-friction="0.2" data-gravity-elasticity="0.7" data-gravity-motion-blur="0.07">Rubber</button>
+        </div>
+        <div class="material-card">
+          <div class="material-icon">🍮</div>
+          <div class="material-name">Jelly</div>
+          <div class="material-desc">Soft, underdamped, maximum squash-and-stretch deformation. Fun & bouncy!</div>
+          <button class="material-demo material-jelly" data-gravity-button data-gravity-material="jelly" data-gravity-bounce="0.8" data-gravity-friction="0.15" data-gravity-elasticity="0.8" data-gravity-motion-blur="0.09">Jelly</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tilt Section -->
+    <h2 class="section-title">Tilt - Hover Tilt & Lift</h2>
+    <div class="demo-section">
+      <span class="demo-label">Hover and click the cards - physics-driven rotation + translateY spring on mouseenter/leave</span>
+      <div class="tilt-group">
+        <div class="tilt-card" data-gravity-tilt data-gravity-tilt-angle="8" data-gravity-lift="8" data-gravity-material="rubber">
+          <div class="tilt-card-emoji">🎾</div>
+          <div class="tilt-card-label">Rubber Tilt</div>
+          <div class="tilt-card-sub">8° · 8px lift</div>
+        </div>
+        <div class="tilt-card" data-gravity-tilt data-gravity-tilt-angle="5" data-gravity-lift="12" data-gravity-material="jelly" data-gravity-motion-blur="0.05">
+          <div class="tilt-card-emoji">🍮</div>
+          <div class="tilt-card-label">Jelly Tilt</div>
+          <div class="tilt-card-sub">5° · 12px lift · blur</div>
+        </div>
+        <div class="tilt-card" data-gravity-tilt data-gravity-tilt-angle="12" data-gravity-lift="4" data-gravity-material="metal">
+          <div class="tilt-card-emoji">🔩</div>
+          <div class="tilt-card-label">Metal Tilt</div>
+          <div class="tilt-card-sub">12° · 4px lift</div>
+        </div>
+        <div class="tilt-card" data-gravity-tilt data-gravity-tilt-angle="6" data-gravity-lift="6" data-gravity-material="rigid">
+          <div class="tilt-card-emoji">🪨</div>
+          <div class="tilt-card-label">Rigid Tilt</div>
+          <div class="tilt-card-sub">6° · 6px lift</div>
+        </div>
+      </div>
+    </div>
+	</div>
+
+	<footer class="footer">
+	  <p>GravityJS - Open Source Physics Animation Library</p>
+	</footer>
+
+	<script src="../dist/gravityjs.umd.js?v=5"></script>
+  <script>
+    'use strict';
+
+    /** Active teardown handle returned by initComponents(). */
+    var teardown = null;
+
+    /**
+     * Destroy all current component instances then re-scan the DOM.
+     * This is called on first load AND by the Replay button.
+     */
+    function initAll() {
+      if (teardown) { teardown(); teardown = null; }
+      teardown = GravityJS.initComponents(document.body);
+    }
+
+    /**
+     * Update a data-gravity-* attribute on every element matching `selector`.
+     * Components re-read attributes on every interaction, so live changes
+     * take effect immediately – no re-init needed for hover/focus components.
+     */
+    function updateAttr(selector, attrName, value) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        el.setAttribute('data-gravity-' + attrName, value);
+      });
+    }
+
+    /**
+     * Bind a range slider so it:
+     *  - Updates its display label
+     *  - Propagates the new value as a data-gravity-* attribute to all targets
+     */
+    function bindSlider(sliderId, labelId, selector, attrName, format) {
+      var slider = document.getElementById(sliderId);
+      var label  = document.getElementById(labelId);
+      if (!slider || !label) return;
+      slider.addEventListener('input', function () {
+        var v = this.value;
+        label.textContent = format ? format(v) : v;
+        updateAttr(selector, attrName, v);
+      });
+    }
+
+    var px = function (v) { return v + 'px'; };
+
+    // Button sliders
+    bindSlider('btnScale',      'btnScaleVal',      '[data-gravity-button]', 'scale');
+    bindSlider('btnBounce',     'btnBounceVal',     '[data-gravity-button]', 'bounce');
+    bindSlider('btnFriction',   'btnFrictionVal',   '[data-gravity-button]', 'friction');
+    bindSlider('btnElasticity', 'btnElasticityVal', '[data-gravity-button]', 'elasticity');
+
+    // Banner sliders
+    bindSlider('bannerDist',       'bannerDistVal',       '[data-gravity-banner]', 'distance', px);
+    bindSlider('bannerBounce',     'bannerBounceVal',     '[data-gravity-banner]', 'bounce');
+    bindSlider('bannerFriction',   'bannerFrictionVal',   '[data-gravity-banner]', 'friction');
+    bindSlider('bannerElasticity', 'bannerElasticityVal', '[data-gravity-banner]', 'elasticity');
+
+    // Accordion sliders
+    bindSlider('accBounce',     'accBounceVal',     '[data-gravity-accordion]', 'bounce');
+    bindSlider('accFriction',   'accFrictionVal',   '[data-gravity-accordion]', 'friction');
+    bindSlider('accElasticity', 'accElasticityVal', '[data-gravity-accordion]', 'elasticity');
+
+    // Menu sliders
+    bindSlider('menuScale',      'menuScaleVal',      '[data-gravity-menu]', 'scale');
+    bindSlider('menuBounce',     'menuBounceVal',     '[data-gravity-menu]', 'bounce');
+    bindSlider('menuFriction',   'menuFrictionVal',   '[data-gravity-menu]', 'friction');
+    bindSlider('menuElasticity', 'menuElasticityVal', '[data-gravity-menu]', 'elasticity');
+
+    // Card sliders
+    bindSlider('cardScale',      'cardScaleVal',      '[data-gravity-card]', 'scale');
+    bindSlider('cardShadow',     'cardShadowVal',     '[data-gravity-card]', 'shadow', px);
+    bindSlider('cardBounce',     'cardBounceVal',     '[data-gravity-card]', 'bounce');
+    bindSlider('cardFriction',   'cardFrictionVal',   '[data-gravity-card]', 'friction');
+    bindSlider('cardElasticity', 'cardElasticityVal', '[data-gravity-card]', 'elasticity');
+
+    // Input sliders
+    bindSlider('inputScale',      'inputScaleVal',      '[data-gravity-input]', 'scale');
+    bindSlider('inputBounce',     'inputBounceVal',     '[data-gravity-input]', 'bounce');
+    bindSlider('inputFriction',   'inputFrictionVal',   '[data-gravity-input]', 'friction');
+    bindSlider('inputElasticity', 'inputElasticityVal', '[data-gravity-input]', 'elasticity');
+
+    // Alert sliders
+    bindSlider('alertDist',       'alertDistVal',       '[data-gravity-alert]', 'distance', px);
+    bindSlider('alertBounce',     'alertBounceVal',     '[data-gravity-alert]', 'bounce');
+    bindSlider('alertFriction',   'alertFrictionVal',   '[data-gravity-alert]', 'friction');
+    bindSlider('alertElasticity', 'alertElasticityVal', '[data-gravity-alert]', 'elasticity');
+
+    // Badge sliders
+    bindSlider('badgeScale',      'badgeScaleVal',      '[data-gravity-badge]', 'scale');
+    bindSlider('badgeBounce',     'badgeBounceVal',     '[data-gravity-badge]', 'bounce');
+    bindSlider('badgeFriction',   'badgeFrictionVal',   '[data-gravity-badge]', 'friction');
+    bindSlider('badgeElasticity', 'badgeElasticityVal', '[data-gravity-badge]', 'elasticity');
+
+    // Progress sliders
+    bindSlider('progBounce',     'progBounceVal',     '[data-gravity-progress]', 'bounce');
+    bindSlider('progFriction',   'progFrictionVal',   '[data-gravity-progress]', 'friction');
+    bindSlider('progElasticity', 'progElasticityVal', '[data-gravity-progress]', 'elasticity');
+
+    // Replay button
+    document.getElementById('replayBtn').addEventListener('click', initAll);
+
+    // Bootstrap on load
+    window.addEventListener('DOMContentLoaded', initAll);
+  </script>
+</body>
+</html>
