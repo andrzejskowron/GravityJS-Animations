@@ -24,6 +24,7 @@ No dependencies. Zero configuration required. Works with vanilla HTML and is fra
 - [Quick Start](#quick-start)
   - [Vanilla HTML via CDN](#vanilla-html-via-cdn)
   - [Via npm (ESM / TypeScript)](#via-npm-esm--typescript)
+  - [Live Demo](#live-demo)
 - [UI Components Overview](#ui-components-overview)
 - [Gravity Engine](#gravity-engine)
 - [Framework Integration](#framework-integration)
@@ -104,6 +105,13 @@ const teardown = initComponents();
 // Clean up all instances and the MutationObserver (e.g. on SPA route change)
 // teardown();
 ```
+
+### Live Demo
+
+You can explore GravityJS Animations in your browser at:
+
+https://gravityjs.andrzejskowron.pl – Gravity Engine and deformation examples, UI components gallery and Scroll-triggered animations
+
 
 ---
 
