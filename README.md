@@ -13,11 +13,14 @@ GravityJS Animations provides two complementary physics systems for the web:
 
 No dependencies. Zero configuration required. Works with vanilla HTML and is framework-compatible with React, Vue, and Angular via `data-gravity-*` attributes.
 
+<img src="./assets/1.gif" alt="GravityJS overview demo" width="100%" />
+
 ---
 
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Presentation](#presentation)
 - [Installation](#installation)
   - [npm](#npm)
   - [CDN](#cdn)
@@ -38,6 +41,22 @@ No dependencies. Zero configuration required. Works with vanilla HTML and is fra
 - [Contact](#contact)
 
 ---
+
+## Presentation
+
+Below are additional demo animations showcasing GravityJS Animations in action:
+
+<img src="./assets/2.gif" alt="GravityJS demo 2" width="100%" />
+
+<img src="./assets/3.gif" alt="GravityJS demo 3" width="100%" />
+
+<img src="./assets/4.gif" alt="GravityJS demo 4" width="100%" />
+
+<img src="./assets/5.gif" alt="GravityJS demo 5" width="100%" />
+
+<img src="./assets/6.gif" alt="GravityJS demo 6" width="100%" />
+
+<img src="./assets/7.gif" alt="GravityJS demo 7" width="100%" />
 
 ## Installation
 
